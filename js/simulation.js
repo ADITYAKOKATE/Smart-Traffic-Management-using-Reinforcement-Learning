@@ -558,15 +558,27 @@ class TrafficSimulation {
     }
 
     getState() {
-        // State: [Queue_N, Queue_S, Queue_E, Queue_W, Phase_N, Phase_S, Phase_E, Phase_W]
-        // Simplified for RL: just queues and maybe "can go"?
-        // Let's stick to Queues for now.
-        return [
-            this.getQueue('N'),
-            this.getQueue('S'),
-            this.getQueue('E'),
-            this.getQueue('W')
-        ];
+        // State: [Queue_N, Queue_S, Queue_E, Queue_W, Current_Phase_Index]
+        // Normalize queues by max capacity (approx 20 cars per lane)
+        // Normalize phase index (0-3) -> 0-1
+        // We need 'currentPhase' passed in or stored. 
+        // Let's store a local copy or ask for it. 
+        // Simplest: just store a local phase index updated by controller in step().
+        // For now, let's assume valid phase is passed or we return raw queues + 0
+        // Better: Update 'step' to take phase or store it.
+        // Actually, let's just use the queues + the phase stored in the class if we add it.
+        // But phase is in main.js. Let's add a setter.
+
+        const qN = this.getQueue('N');
+        const qS = this.getQueue('S');
+        const qE = this.getQueue('E');
+        const qW = this.getQueue('W');
+
+        return [qN, qS, qE, qW, this.currentPhaseIndex || 0];
+    }
+
+    setPhaseIndex(idx) {
+        this.currentPhaseIndex = idx;
     }
 
     getTotalWaiting() {
