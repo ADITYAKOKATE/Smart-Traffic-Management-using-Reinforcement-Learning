@@ -68,6 +68,7 @@ let isRunning = true;
 // Metrics
 let totalReward = 0;
 let totalWaitMetric = 0;
+let totalThroughput = 0;
 let metricsHistory = [];
 
 // Frame skipping for flickering
@@ -294,7 +295,9 @@ function update() {
     // Penalty for switching too fast? No, we handle that with MinGreen.
     // Penalty for keeping too long? We have -Wait.
 
-    let reward = (sim.currentThroughput * 20) - (nextWait * 0.5);
+    // Increased throughput reward and decreased wait penalty
+    // so that the net reward doesn't always go heavily negative.
+    let reward = (sim.currentThroughput * 200) - (nextWait * 0.1);
 
     // Normalize reward to be around -1 to 1 for stability? 
     // Neural nets like small numbers.
@@ -316,8 +319,8 @@ function update() {
     // Metrics
     totalReward += reward;
     totalWaitMetric += nextWait;
+    totalThroughput += sim.currentThroughput;
     episodeSteps++;
-    if (episodeSteps % 60 === 0) els.throughput.innerText = sim.currentThroughput;
 
     if (done) resetEpisode();
 }
@@ -331,6 +334,7 @@ function draw() {
         els.epsilon.innerText = agent.brain.epsilon.toFixed(3);
         els.reward.innerText = totalReward.toFixed(1);
         els.avgWait.innerText = (totalWaitMetric / episodeSteps).toFixed(1);
+        els.throughput.innerText = totalThroughput;
 
         // Debug UI
         document.getElementById('dbg-mode').innerText = `PHASE ${currentPhase}`;
@@ -368,6 +372,7 @@ function resetEpisode() {
     episodeSteps = 0;
     totalReward = 0;
     totalWaitMetric = 0;
+    totalThroughput = 0;
     // Reset Logic
     currentPhase = 0;
     phaseTimer = 0;
